@@ -1,0 +1,5 @@
+aisles: 134
+departments: 21
+instacart_orders: 478967
+order_products: 4545007
+products: 49694
