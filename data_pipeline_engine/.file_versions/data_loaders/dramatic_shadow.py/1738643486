@@ -1,0 +1,51 @@
+from mage_ai.settings.repo import get_repo_path
+from mage_ai.io.config import ConfigFileLoader
+from mage_ai.io.mysql import MySQL
+
+import snowflake.connector
+import mysql.connector
+
+from os import path
+if 'data_loader' not in globals():
+    from mage_ai.data_preparation.decorators import data_loader
+if 'test' not in globals():
+    from mage_ai.data_preparation.decorators import test
+
+
+@data_source
+def mysql_source_block():
+    # Conexión a MySQL (sin especificar la base de datos)
+    mydb = mysql.connector.connect(
+        host="<tu_host_mysql>",
+        user="<tu_usuario_mysql>",
+        password="<tu_contraseña_mysql>"
+    )
+
+    mycursor = mydb.cursor()
+
+    # Crear la base de datos (si no existe)
+    try:
+        mycursor.execute("CREATE DATABASE mi_base_de_datos")
+        print("Base de datos creada exitosamente.")
+    except mysql.connector.errors.DatabaseError as err:
+        if err.errno == 1007:  # La base de datos ya existe
+            print("La base de datos ya existe.")
+        else:
+            raise err
+
+    # Seleccionar la base de datos
+    mydb.database = "mi_base_de_datos"
+
+    # Crear el esquema (si no existe)
+    try:
+        mycursor.execute("CREATE SCHEMA mi_esquema")
+        print("Esquema creado exitosamente.")
+    except mysql.connector.errors.ProgrammingError as err:
+        if "already exists" in err.msg:  # El esquema ya existe
+            print("El esquema ya existe.")
+        else:
+            raise err
+
+    # ... (resto del código para leer datos de MySQL)
+    return DataSource.get_by_name('mysql_source')  # Usa un perfil si lo necesitas
+
